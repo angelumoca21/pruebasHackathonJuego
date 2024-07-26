@@ -3,58 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Formulario</title>
 </head>
-    <body>
-        <div class="box">
-            <div class="form">
-                <form>
-                    <div class="inputbox">
-                        <input type="text" value="" id="username" required>
-                        <span>Username</span>
-                    </div>
-                    <div class="inputbox">
-                        <input type="number" value="" id="score" required>
-                        <span>Score</span>
-                    </div>
-                    <div class="inputbox">
-                        <input type="text" value="" id="spot" required>
-                        <span>Spot</span>
-                    </div>
-                    <input type="submit" value="submit" class="sub" id="submit">
-                </form>
-            </div>
+<body>
+    <div class="box">
+        <div class="form">
+            <form>
+                <div class="inputbox">
+                    <input type="text" id="username" required>
+                    <span>Username</span>
+                </div>
+                <div class="inputbox">
+                    <input type="number" id="score" required>
+                    <span>Score</span>
+                </div>
+                <div class="inputbox">
+                    <input type="text" id="spot" required>
+                    <span>Spot</span>
+                </div>
+                <input type="submit" value="submit" class="sub" id="submit">
+            </form>
         </div>
-        <script type="module">
+    </div>
+    <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
+        import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
+
         // Your web app's Firebase configuration
         const firebaseConfig = {
-        apiKey: "AIzaSyD-DM0yFWbFpeIGF3eTSpDo8gOEvitRXkM",
-        authDomain: "pruebahackathon-eea94.firebaseapp.com",
-        projectId: "pruebahackathon-eea94",
-        storageBucket: "pruebahackathon-eea94.appspot.com",
-        messagingSenderId: "743812823032",
-        appId: "1:743812823032:web:0d105ab1c5f02d52e6480d"
+            apiKey: "AIzaSyD-DM0yFWbFpeIGF3eTSpDo8gOEvitRXkM",
+            authDomain: "pruebahackathon-eea94.firebaseapp.com",
+            projectId: "pruebahackathon-eea94",
+            storageBucket: "pruebahackathon-eea94.appspot.com",
+            messagingSenderId: "743812823032",
+            appId: "1:743812823032:web:0d105ab1c5f02d52e6480d"
         };
+
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-
         const db = getDatabase(app);
 
-        document.getElementById("submit").addEventListener("click", function(e){
+        document.getElementById("submit").addEventListener("click", function(e) {
             e.preventDefault();
-            set(ref(db,'user/'+document.getElementById("username").value),
-            {
-                username: document.getElementById("username").value,
-                score: document.getElementById("score").value,
-                spot:document.getElementById("spot").value
+            const username = document.getElementById("username").value;
+            const newScore = parseInt(document.getElementById("score").value, 10);
+            const newSpot = document.getElementById("spot").value;
+
+            const userRef = ref(db, 'user/' + username);
+
+            get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    const updatedScore = parseInt(userData.score, 10) + newScore;
+                    const updatedSpot = userData.spot + ', ' + newSpot;
+
+                    update(userRef, {
+                        score: updatedScore,
+                        spot: updatedSpot
+                    }).then(() => {
+                        alert("Datos actualizados.");
+                    }).catch((error) => {
+                        console.error("Error al actualizar los datos: ", error);
+                        alert("Error al actualizar los datos.");
+                    });
+                } else {
+                    set(userRef, {
+                        username: username,
+                        score: newScore,
+                        spot: newSpot
+                    }).then(() => {
+                        alert("Datos guardados.");
+                    }).catch((error) => {
+                        console.error("Error al guardar los datos: ", error);
+                        alert("Error al guardar los datos.");
+                    });
+                }
+            }).catch((error) => {
+                console.error("Error al obtener los datos: ", error);
+                alert("Error al obtener los datos.");
             });
-            alert("Respuesta enviada.");
-        })
-        </script>
-    </body>
+        });
+    </script>
+</body>
 </html>
